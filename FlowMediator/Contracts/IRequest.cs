@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a request. The response type is TResponse.
     /// </summary>
-    public interface IRequest
+    public interface IRequest<TResponse>
     {
     }
 }
