@@ -2,19 +2,20 @@
 
 namespace FlowMediator.Core
 {
-    /// <summary>
-    /// FlowMediator with DI support.
-    /// Handlers are resolved via IServiceProvider
-    /// </summary>
     public class Mediator : IMediator
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly PipelineExecutor _pipelineExecutor;
 
         public Mediator(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _pipelineExecutor = new PipelineExecutor(serviceProvider);
         }
-        public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+
+        public async Task<TResponse> SendAsync<TResponse>(
+            IRequest<TResponse> request,
+            CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -30,12 +31,17 @@ namespace FlowMediator.Core
             if (method == null)
                 throw new InvalidOperationException($"Handler {handler.GetType().Name} does not contain Handle method");
 
-            var result = method.Invoke(handler, new object[] { request, cancellationToken });
+            RequestHandlerDelegate<TResponse> handlerDelegate = async () =>
+            {
+                var result = method.Invoke(handler, new object[] { request, cancellationToken });
+                if (result is Task<TResponse> task)
+                    return await task;
 
-            if (result is Task<TResponse> task)
-                return await task;
+                throw new InvalidOperationException(
+                    $"Handler {handler.GetType().Name} did not return Task<{typeof(TResponse).Name}>");
+            };
 
-            throw new InvalidOperationException($"Handler {handler.GetType().Name} did not return Task<{typeof(TResponse).Name}>");
+            return await _pipelineExecutor.Execute((dynamic)request, cancellationToken, handlerDelegate);
         }
     }
 }
