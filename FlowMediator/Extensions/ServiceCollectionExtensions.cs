@@ -25,7 +25,17 @@ namespace FlowMediator.Extensions
                     .Select(i => new { Behavior = t, Interface = i }));
 
             foreach (var b in behaviorTypes)
-                services.AddTransient(b.Interface, b.Behavior);
+            {
+                if (b.Behavior.IsGenericTypeDefinition)
+                {
+                    
+                    services.AddTransient(b.Interface.GetGenericTypeDefinition(), b.Behavior.GetGenericTypeDefinition());
+                }
+                else
+                {
+                    services.AddTransient(b.Interface, b.Behavior);
+                }
+            }
 
             services.AddSingleton<IMediator, Mediator>();
 
