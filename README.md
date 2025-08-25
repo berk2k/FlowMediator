@@ -1,2 +1,2 @@
 # FlowMediator
-Simple mediator nuget package for personal projects
+Simple mediator nuget package for personal projects (in progress)
