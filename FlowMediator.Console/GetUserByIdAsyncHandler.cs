@@ -9,14 +9,16 @@ namespace FlowMediator.Console
 {
     public class GetUserByIdAsyncHandler : IRequestHandlerAsync<GetUserByIdQuery, User>
     {
+        private readonly IUserRepository _repository;
+
+        public GetUserByIdAsyncHandler(IUserRepository repository)
+        {
+            _repository = repository;
+        }
+
         public async Task<User> HandleAsync(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
-            await Task.Delay(500, cancellationToken); // simulate I/O
-            return new User
-            {
-                Id = request.Id,
-                Name = $"Async User {request.Id}"
-            };
+            return await _repository.GetByIdAsync(request.Id);
         }
     }
 }

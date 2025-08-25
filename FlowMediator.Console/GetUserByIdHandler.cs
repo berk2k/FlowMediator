@@ -4,14 +4,16 @@ namespace FlowMediator.Console
 {
     public class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, User>
     {
+        private readonly IUserRepository _repository;
+
+        public GetUserByIdHandler(IUserRepository repository)
+        {
+            _repository = repository;
+        }
+
         public User Handle(GetUserByIdQuery request)
         {
-
-            return new User
-            {
-                Id = request.Id,
-                Name = $"User {request.Id}"
-            };
+            return _repository.GetById(request.Id);
         }
     }
 }
