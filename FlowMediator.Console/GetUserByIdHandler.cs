@@ -11,9 +11,12 @@ namespace FlowMediator.Console
             _repository = repository;
         }
 
-        public User Handle(GetUserByIdQuery request)
+        public async Task<User> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
-            return _repository.GetById(request.Id);
+            // Simulate async database call
+            await Task.Delay(200, cancellationToken);
+
+            return await _repository.GetByIdAsync(request.Id);
         }
     }
 }
