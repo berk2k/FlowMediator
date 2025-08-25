@@ -1,32 +1,37 @@
 ﻿using FlowMediator.Contracts;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FlowMediator.Core
 {
     /// <summary>
-    /// The core of FlowMediator.
-    /// Supports both sync and async request handling.
+    /// FlowMediator with DI support.
+    /// Handlers are resolved via IServiceProvider
     /// </summary>
     public class Mediator : IMediator
     {
+        private readonly IServiceProvider _serviceProvider;
+
+        public Mediator(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        }
+
         public TResponse Send<TResponse>(IRequest<TResponse> request)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var requestType = request.GetType();
-            var handlerType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(TResponse));
+            var handlerType = typeof(IRequestHandler<,>)
+                .MakeGenericType(request.GetType(), typeof(TResponse));
 
-            var handler = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .FirstOrDefault(t => handlerType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
-
+            var handler = _serviceProvider.GetService(handlerType);
             if (handler == null)
-                throw new InvalidOperationException($"No handler found for {requestType.Name}");
+                throw new InvalidOperationException($"No handler found for {request.GetType().Name}");
 
-            var handlerInstance = Activator.CreateInstance(handler);
             var method = handlerType.GetMethod("Handle");
-
-            return (TResponse)method.Invoke(handlerInstance, new object[] { request });
+            return (TResponse)method.Invoke(handler, new object[] { request });
         }
 
         public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
@@ -34,29 +39,20 @@ namespace FlowMediator.Core
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var requestType = request.GetType();
-            var handlerType = typeof(IRequestHandlerAsync<,>).MakeGenericType(requestType, typeof(TResponse));
+            var handlerType = typeof(IRequestHandlerAsync<,>)
+                .MakeGenericType(request.GetType(), typeof(TResponse));
 
-            var handler = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .FirstOrDefault(t => handlerType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
-
+            var handler = _serviceProvider.GetService(handlerType);
             if (handler == null)
-                throw new InvalidOperationException($"No async handler found for {requestType.Name}");
+                throw new InvalidOperationException($"No async handler found for {request.GetType().Name}");
 
-            var handlerInstance = Activator.CreateInstance(handler);
             var method = handlerType.GetMethod("HandleAsync");
-
-            var result = method.Invoke(handlerInstance, new object[] { request, cancellationToken });
+            var result = method.Invoke(handler, new object[] { request, cancellationToken });
 
             if (result is Task<TResponse> task)
-            {
                 return await task;
-            }
 
-            throw new InvalidOperationException($"Handler {handler.Name} did not return Task<{typeof(TResponse).Name}>");
+            throw new InvalidOperationException($"Handler {handler.GetType().Name} did not return Task<{typeof(TResponse).Name}>");
         }
     }
 }
-
-
