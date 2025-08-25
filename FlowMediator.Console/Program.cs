@@ -1,14 +1,27 @@
 ﻿using FlowMediator.Console;
+using FlowMediator.Console.Behaviors;
 using FlowMediator.Contracts;
 using FlowMediator.Extensions;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using FluentValidation;
+
+// handlers + behavior pipelines are automatic
+
+//var services = new ServiceCollection();
+
+//services.AddFlowMediatorWithBehaviors(Assembly.GetExecutingAssembly());
+
+//services.AddSingleton<IUserRepository, UserRepository>();
+
+//services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+//var provider = services.BuildServiceProvider();
+//var mediator = provider.GetRequiredService<IMediator>();
 
 
-
+// handlers are automatic, behavior pipelines manual 
 var services = new ServiceCollection();
-
 
 services.AddFlowMediator(Assembly.GetExecutingAssembly());
 
@@ -16,8 +29,13 @@ services.AddSingleton<IUserRepository, UserRepository>();
 
 services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
 var provider = services.BuildServiceProvider();
 var mediator = provider.GetRequiredService<IMediator>();
+
 
 
 var user = await mediator.SendAsync(new GetUserByIdQuery(1));
@@ -37,3 +55,4 @@ catch (ValidationException ex)
         Console.WriteLine($"   - {error.PropertyName}: {error.ErrorMessage}");
     }
 }
+
