@@ -1,7 +1,7 @@
 # FlowMediator
 A lightweight mediator library with pipeline behaviors for .NET 8/9.
 
-Ideal for hobby projects, personal apps, or learning CQRS patterns without the complexity of bigger frameworks.
+Ideal for hobby projects, or learning CQRS patterns without the complexity of bigger frameworks.
 
 Provides request/response messaging and pipeline behaviors like logging and validation with minimal setup.
 
