@@ -47,6 +47,12 @@ Console.WriteLine(user.Name); // "User 1"
 ## 🤝 Contributing
 Contributions are welcome! Please fork the repo and create a PR.
 
+## ⚠️ Disclaimer
+
+FlowMediator is a lightweight mediator library designed for hobby projects, learning, and simple applications.  
+It does **not** implement any security features by itself.  
+Please handle **validation, authorization, and exception management** within your own application.
+
 ## 📜 License
 Licensed under the MIT License. See [LICENSE](./LICENSE) for details.
 
