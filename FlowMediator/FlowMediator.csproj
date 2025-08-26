@@ -11,8 +11,10 @@
       Ideal for hobby projects, or learning CQRS patterns without the complexity of bigger frameworks. 
       Provides request/response messaging and pipeline behaviors like logging and validation with minimal setup.
     </Description>
-    <PackageTags>mediator cqrs pipeline .net lightweight </PackageTags>
+    <PackageTags>mediator cqrs pipeline .net lightweight hobby</PackageTags>
     <RepositoryUrl>https://github.com/berk2k/FlowMediator</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/berk2k/FlowMediator</PackageProjectUrl>
+    <PackageReleaseNotes>Initial 1.0.0 release: core mediator, pipeline behaviors, DI integration.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <ImplicitUsings>enable</ImplicitUsings>
