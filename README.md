@@ -1,4 +1,6 @@
 # FlowMediator
+link: https://www.nuget.org/packages/FlowMediator/
+
 A lightweight mediator library with pipeline behaviors for .NET 8/9.
 
 Ideal for hobby projects, or learning CQRS patterns without the complexity of bigger frameworks.
