@@ -1,7 +1,9 @@
 # FlowMediator
+link: https://www.nuget.org/packages/FlowMediator/
+
 A lightweight mediator library with pipeline behaviors for .NET 8/9.
 
-Ideal for hobby projects, personal apps, or learning CQRS patterns without the complexity of bigger frameworks.
+Ideal for hobby projects, or learning CQRS patterns without the complexity of bigger frameworks.
 
 Provides request/response messaging and pipeline behaviors like logging and validation with minimal setup.
 
@@ -46,6 +48,12 @@ Console.WriteLine(user.Name); // "User 1"
 
 ## 🤝 Contributing
 Contributions are welcome! Please fork the repo and create a PR.
+
+## ⚠️ Disclaimer
+
+FlowMediator is a lightweight mediator library designed for hobby projects, learning, and simple applications.  
+It does **not** implement any security features by itself.  
+Please handle **validation, authorization, and exception management** within your own application.
 
 ## 📜 License
 Licensed under the MIT License. See [LICENSE](./LICENSE) for details.
