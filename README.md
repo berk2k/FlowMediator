@@ -1,4 +1,8 @@
 # FlowMediator
+[![NuGet](https://img.shields.io/nuget/v/FlowMediator.svg)](https://www.nuget.org/packages/FlowMediator/) [![NuGet Downloads](https://img.shields.io/nuget/dt/FlowMediator.svg)](https://www.nuget.org/packages/FlowMediator/) [![Build](https://github.com/berk2k/FlowMediator/actions/workflows/ci.yml/badge.svg)](https://github.com/berk2k/FlowMediator/actions/workflows/ci.yml)
+
+
+
 link: https://www.nuget.org/packages/FlowMediator/
 
 A lightweight mediator library with pipeline behaviors for .NET 8/9.
