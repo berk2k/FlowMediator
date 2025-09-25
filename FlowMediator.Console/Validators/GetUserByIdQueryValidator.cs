@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using FlowMediator.Console.Queries;
+using FluentValidation;
 
 namespace FlowMediator.Console.Validators
 {

@@ -1,6 +1,7 @@
-﻿using FlowMediator.Contracts;
+﻿using FlowMediator.Console.Entities;
+using FlowMediator.Contracts;
 
-namespace FlowMediator.Console
+namespace FlowMediator.Console.Queries
 {
     public class GetUserByIdQuery : IRequest<User>
     {

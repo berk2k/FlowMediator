@@ -1,6 +1,8 @@
-﻿using FlowMediator.Contracts;
+﻿using FlowMediator.Console.Entities;
+using FlowMediator.Console.Repositories;
+using FlowMediator.Contracts;
 
-namespace FlowMediator.Console
+namespace FlowMediator.Console.Queries
 {
     public class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, User>
     {
