@@ -1,4 +1,4 @@
-﻿namespace FlowMediator.Console
+﻿namespace FlowMediator.Console.Entities
 {
     public class User
     {

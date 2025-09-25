@@ -1,4 +1,6 @@
-﻿namespace FlowMediator.Console
+﻿using FlowMediator.Console.Entities;
+
+namespace FlowMediator.Console.Repositories
 {
     public interface IUserRepository
     {
