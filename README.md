@@ -5,19 +5,29 @@
 
 link: https://www.nuget.org/packages/FlowMediator/
 
-A lightweight mediator library with pipeline behaviors for .NET 8/9.
+## Overview
+FlowMediator is a lightweight mediator library for .NET 8/9, designed to simplify the CQRS and Mediator pattern with minimal setup.
+It supports request/response messaging, pipeline behaviors, and domain events out of the box.
 
-Ideal for hobby projects, or learning CQRS patterns without the complexity of bigger frameworks.
+Use it when you want:
 
-Provides request/response messaging and pipeline behaviors like logging and validation with minimal setup.
+-Clean separation of concerns in your application
+
+-Simple request/response messaging without boilerplate
+
+-EF Core integration with Domain Events
+
+-A minimal learning-friendly alternative to heavy frameworks
 
 ## Features
 
 ✅ Request/Response messaging (IRequest<TResponse>, IRequestHandler<TRequest,TResponse>)
 
-✅ Pipeline behaviors (IPipelineBehavior<TRequest,TResponse>) for cross-cutting concerns (logging, validation, etc.)
+✅ Pipeline behaviors (IPipelineBehavior<TRequest,TResponse>) for logging, validation, etc.
 
-✅ Dependency Injection (DI) ready via IServiceCollection extensions
+✅ Domain Events with EF Core integration (v1.2.0+)
+
+✅ Dependency Injection (DI) extensions for IServiceCollection
 
 ✅ Manual or automatic pipeline registration
 
@@ -25,33 +35,142 @@ Provides request/response messaging and pipeline behaviors like logging and vali
 
 ## Installation
 ```bash
-dotnet add package FlowMediator --version 1.0.0
+dotnet add package FlowMediator --version 1.2.0
 ```
 
 ## Example Usage
+## 1.Define a Request & Handler
 ```markdown
-using FlowMediator.Contracts;
-using FlowMediator.Extensions;
+// Query
+public record GetUserByIdQuery(int Id) : IRequest<UserDto>;
 
-// Manual pipeline (you choose order of behaviors)
-services.AddFlowMediator(typeof(GetUserByIdQuery).Assembly);
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+// Handler
+public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto>
+{
+    private readonly IUserRepository _repository;
 
-// Or automatic pipeline (handlers + behaviors auto registered)
-services.AddFlowMediatorWithBehaviors(typeof(GetUserByIdQuery).Assembly);
+    public GetUserByIdQueryHandler(IUserRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    {
+        var user = await _repository.GetByIdAsync(request.Id);
+        return user ?? throw new Exception("User not found");
+    }
+}
 ```
 
-## Use Mediator
+## 2. Register in DI
+```markdown
+services.AddFlowMediator(typeof(GetUserByIdQuery).Assembly);
+services.AddScoped<IUserRepository, UserRepository>();
+
+// Optional: pipeline behaviors
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+```
+
+## 3. Use Mediator
 ```markdown
 var mediator = provider.GetRequiredService<IMediator>();
 
 var user = await mediator.Send(new GetUserByIdQuery(1));
 Console.WriteLine(user.Name); // "User 1"
+
+```
+
+## Domain Events with EF Core
+## Base Entity
+```markdown
+public abstract class BaseEntity
+{
+    private readonly List<IRequest<Unit>> _domainEvents = new();
+    public IReadOnlyCollection<IRequest<Unit>> DomainEvents => _domainEvents.AsReadOnly();
+
+    protected void AddDomainEvent(IRequest<Unit> domainEvent) => _domainEvents.Add(domainEvent);
+    public void ClearDomainEvents() => _domainEvents.Clear();
+}
+```
+
+## DbContext Integration
+```markdown
+public class AppDbContext : DbContext
+{
+    private readonly IMediator _mediator;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, IMediator mediator)
+        : base(options)
+    {
+        _mediator = mediator;
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = ChangeTracker
+            .Entries<BaseEntity>()
+            .Where(e => e.Entity.DomainEvents.Any())
+            .Select(e => e.Entity);
+
+        foreach (var entity in entities)
+        {
+            foreach (var domainEvent in entity.DomainEvents)
+            {
+                await _mediator.Publish(domainEvent);
+            }
+            entity.ClearDomainEvents();
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+}
+
+```
+
+## Example Entity + Event
+```markdown
+public class User : BaseEntity
+{
+    public Guid Id { get; private set; }
+    public string Name { get; private set; }
+
+    public User(string name)
+    {
+        Id = Guid.NewGuid();
+        Name = name;
+        AddDomainEvent(new UserCreatedEvent(Id, Name));
+    }
+}
+
+public record UserCreatedEvent(Guid Id, string Name) : IRequest<Unit>;
+
+```
+
+## Event Handler
+```markdown
+public class UserCreatedEventHandler : IRequestHandler<UserCreatedEvent, Unit>
+{
+    public Task<Unit> Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"[DomainEvent] User created: {notification.Name}");
+        return Task.FromResult(Unit.Value);
+    }
+}
+
+
 ```
 
 ## 🤝 Contributing
-Contributions are welcome! Please fork the repo and create a PR.
+Contributions, bug reports, and feature requests are welcome!
+
+1. Fork the repo
+
+2. Create a feature branch (git checkout -b feature/my-feature)
+
+3. Commit changes and push
+
+4. Open a Pull Request
 
 ## ⚠️ Disclaimer
 
