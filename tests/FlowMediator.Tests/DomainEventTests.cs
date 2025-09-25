@@ -11,7 +11,7 @@ namespace FlowMediator.Tests
         public async Task Should_Handle_DomainEvent_When_EntityCreated()
         {
             // Arrange
-            var services = new ServiceCollection();
+            IServiceCollection services = new ServiceCollection();
             services.AddFlowMediator(typeof(DomainEventTests).Assembly);
             var provider = services.BuildServiceProvider();
             var mediator = provider.GetRequiredService<IMediator>();
@@ -27,5 +27,4 @@ namespace FlowMediator.Tests
             Assert.Single(entity.DomainEvents);
         }
     }
-
 }

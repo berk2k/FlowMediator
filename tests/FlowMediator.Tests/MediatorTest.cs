@@ -1,27 +1,22 @@
 ﻿using FlowMediator.Contracts;
 using FlowMediator.Extensions;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FlowMediator.Tests
 {
-
     public class MediatorTests
     {
         [Fact]
         public async Task SendAsync_Should_Invoke_Handler()
         {
-            // Arrange
             var services = new ServiceCollection();
             services.AddFlowMediator(typeof(MediatorTests).Assembly);
             var provider = services.BuildServiceProvider();
             var mediator = provider.GetRequiredService<IMediator>();
 
-            // Act
             var result = await mediator.SendAsync(new Ping());
 
-            // Assert
-            result.Should().Be("Pong");
+            Assert.Equal("Pong", result);
         }
 
         [Fact]
@@ -44,5 +39,4 @@ namespace FlowMediator.Tests
         public Task<string> Handle(Ping request, CancellationToken cancellationToken)
             => Task.FromResult("Pong");
     }
-
 }
