@@ -3,18 +3,20 @@
   <PropertyGroup>
     <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
+    <Version>1.2.0</Version>
     <PackageId>FlowMediator</PackageId>
     <Authors>berk2k</Authors>
     <Description>
-      A lightweight mediator library with pipeline behaviors for .NET 8/9. 
+      FlowMediator is a lightweight mediator library with pipeline behaviors and domain events for .NET 8/9. 
       Ideal for hobby projects, or learning CQRS patterns without the complexity of bigger frameworks. 
-      Provides request/response messaging and pipeline behaviors like logging and validation with minimal setup.
+      Provides request/response messaging, pipeline behaviors (logging, validation), and EF Core domain event support.
     </Description>
-    <PackageTags>mediator cqrs pipeline .net lightweight hobby</PackageTags>
+    <PackageTags>mediator cqrs pipeline domain-events .net lightweight hobby</PackageTags>
     <RepositoryUrl>https://github.com/berk2k/FlowMediator</RepositoryUrl>
     <PackageProjectUrl>https://github.com/berk2k/FlowMediator</PackageProjectUrl>
-    <PackageReleaseNotes>Initial 1.0.0 release: core mediator, pipeline behaviors, DI integration.</PackageReleaseNotes>
+    <PackageReleaseNotes>
+      v1.2.0 - Added Domain Event support with EF Core integration. Improved README and documentation.
+    </PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <ImplicitUsings>enable</ImplicitUsings>
