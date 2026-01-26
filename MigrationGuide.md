@@ -5,7 +5,7 @@ This guide explains how to migrate existing applications.
 
 ---
 
-## 1 Domain Events
+## 1) Domain Events
 
 ### v1
 
@@ -22,10 +22,9 @@ public interface IDomainEvent : IEvent { }
 await mediator.PublishAsync(new UserCreatedEvent(...));
 ```
 
-## 2 Event Handlers
+## 2) Event Handlers
 
 ### v1
-
 ```csharp
 public class UserCreatedHandler
     : IRequestHandler<UserCreatedEvent, Unit>
@@ -33,7 +32,7 @@ public class UserCreatedHandler
     public Task<Unit> Handle(...) { }
 }
 ```
-
+### v2
 ```csharp
 public class UserCreatedHandler
     : IEventHandler<UserCreatedEvent>
@@ -44,7 +43,7 @@ public class UserCreatedHandler
     }
 }
 ```
-## 3 Send vs Publish
+## 3) Send vs Publish
 | Purpose                     | Method         |
 | --------------------------- | -------------- |
 | Command / Query             | `SendAsync`    |
@@ -52,12 +51,12 @@ public class UserCreatedHandler
 
 Events can no longer be sent using SendAsync.
 
-## 4 Pipelines
+## 4) Pipelines
 - Pipelines apply only to SendAsync
 - Events are executed outside the pipeline
 - This enables retries, compensation, and observability in future versions
 
-## 5 Dependency Injection
+## 5) Dependency Injection
 
 No changes required.
 Event handlers are discovered automatically.
