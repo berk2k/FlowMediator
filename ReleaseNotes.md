@@ -16,6 +16,7 @@ It does not add more features — it fixes the model.
 - Multiple event handlers supported
 - Cleaner and more predictable execution flow
 - Stronger foundation for observability, retries, and outbox patterns
+- Event handlers run in-process and sequentially by default (order not guaranteed unless controlled; stop-on-first-error).
 
 ---
 
@@ -47,6 +48,12 @@ It does not add more features — it fixes the model.
 | Event | `PublishAsync` | Multiple | No |
 
 ---
+
+### Event Dispatch Semantics (v2)
+
+- `PublishAsync` runs handlers **in-process** and **sequentially** by default.
+- **Handler order is not guaranteed** unless explicitly controlled via registration/ordering.
+- If any handler throws, dispatch **stops** and the exception is **re-thrown** (remaining handlers won’t run).
 
 ## What’s Next
 
