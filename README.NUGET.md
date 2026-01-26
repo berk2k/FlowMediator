@@ -41,7 +41,11 @@ await mediator.PublishAsync(new UserCreatedEvent());
 - No response
 - Side-effect oriented
 
-Event handlers are executed sequentially and synchronously by default.
+### Event Dispatch Semantics
+- PublishAsync runs handlers sequentially (in-process) by default.
+- Handler order is not guaranteed unless explicitly controlled via registration/ordering.
+- If any handler throws, dispatch stops and the exception is re-thrown (remaining handlers won’t run).
+- Events are in-process notifications (not durable messaging). For reliable cross-service delivery, prefer Outbox / background worker / message broker patterns.
 
 ## Key Concepts
 - SendAsync -> application flow (commands / queries)
