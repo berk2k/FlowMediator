@@ -28,6 +28,7 @@ namespace FlowMediator.Extensions
         public static IServiceCollection AddFlowMediatorWithBehaviors(this IServiceCollection services, Assembly assembly)
         {
             services.RegisterHandlers(assembly);
+            services.RegisterEventHandlers(assembly);
             services.RegisterBehaviors(assembly);
             services.AddSingleton<IMediator, Mediator>();
             return services;
