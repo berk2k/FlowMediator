@@ -85,6 +85,10 @@ Console.WriteLine(user.Name);
 ## Events (v2 Model)
 Events are published, not sent.
 
+Event handlers are executed sequentially (in-process) by default for predictability.
+Handler order is not guaranteed unless you explicitly control registration/ordering.
+If any handler throws, dispatch stops and the exception is rethrown (remaining handlers won’t run).
+
 ``` csharp
 public class UserCreatedEvent : IEvent
 {
@@ -94,6 +98,13 @@ public class UserCreatedEvent : IEvent
 
 await mediator.PublishAsync(new UserCreatedEvent());
 ```
+### Event Dispatch Semantics
+- `PublishAsync` executes handlers **in-process** and **sequentially** by default.
+- **No pipeline behaviors** are applied to events.
+- **Exceptions:** if an event handler throws, `PublishAsync` will **(choose one: stop and rethrow / continue and aggregate)**.
+- Events are **not durable messages**. If you need reliable cross-process delivery (e.g., integration events), use an **Outbox + background worker / message broker** pattern.
+- Keep event handlers **fast**. For long-running work, prefer background processing.
+
 ## Event Handler
 ``` csharp
 public class UserCreatedEventHandler
@@ -129,7 +140,8 @@ Events are executed outside the pipeline.
 ## Roadmap
 - FlowContext (CorrelationId, UserId, Metadata)
 - Step-based execution model
-- Observability and retry 
+- Observability and retry
+- Command / Query specialization
 
 ## ⚠️ Disclaimer
 
@@ -145,6 +157,17 @@ These responsibilities intentionally remain in the application layer.
 
 FlowMediator is designed to be **explicit and predictable**,  
 not a full application framework.
+
+### Guarantees & Non-Goals
+
+**Guarantees**
+- `SendAsync` is request/response: **single handler**, pipeline-enabled.
+- `PublishAsync` is event notification: **multiple handlers**, no response.
+
+**Non-Goals**
+- Durable messaging / exactly-once delivery guarantees
+- Distributed transactions
+- Automatic retries without idempotency guarantees
 
 ## 🤝 Contributing
 Contributions, bug reports, and feature requests are welcome.
