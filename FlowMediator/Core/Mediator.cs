@@ -1,4 +1,5 @@
 ﻿using FlowMediator.Contracts;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FlowMediator.Core
 {
@@ -42,6 +43,24 @@ namespace FlowMediator.Core
             };
 
             return await _pipelineExecutor.Execute((dynamic)request, cancellationToken, handlerDelegate);
+        }
+
+        public async Task PublishAsync<TEvent>(
+        TEvent @event,
+        CancellationToken cancellationToken = default)
+        where TEvent : IEvent
+        {
+            if (@event is null)
+                throw new ArgumentNullException(nameof(@event));
+
+            var handlers = _serviceProvider
+                .GetServices<IEventHandler<TEvent>>()
+                .ToList();
+
+            foreach (var handler in handlers)
+            {
+                await handler.Handle(@event, cancellationToken);
+            }
         }
     }
 }
