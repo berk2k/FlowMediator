@@ -85,10 +85,9 @@ Console.WriteLine(user.Name);
 ## Events (v2 Model)
 Events are published, not sent.
 
-Event handlers are executed **sequentially and synchronously** by default.
-
-Handlers run sequentially (in-process) by default for predictability.
+Event handlers are executed sequentially (in-process) by default for predictability.
 Handler order is not guaranteed unless you explicitly control registration/ordering.
+If any handler throws, dispatch stops and the exception is rethrown (remaining handlers won’t run).
 
 ``` csharp
 public class UserCreatedEvent : IEvent
