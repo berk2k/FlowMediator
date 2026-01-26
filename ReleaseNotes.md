@@ -1,4 +1,4 @@
-# FlowMediator v2.0.0
+# FlowMediator v2.0
 
 FlowMediator v2.0 introduces a **clear and explicit separation between application flow and event flow**.
 
