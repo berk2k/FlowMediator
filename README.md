@@ -87,8 +87,8 @@ Events are published, not sent.
 
 Event handlers are executed **sequentially and synchronously** by default.
 
-This guarantees deterministic execution order.
-Parallel or asynchronous dispatch may be introduced in future versions.
+Handlers run sequentially (in-process) by default for predictability.
+Handler order is not guaranteed unless you explicitly control registration/ordering.
 
 ``` csharp
 public class UserCreatedEvent : IEvent
@@ -99,6 +99,13 @@ public class UserCreatedEvent : IEvent
 
 await mediator.PublishAsync(new UserCreatedEvent());
 ```
+### Event Dispatch Semantics
+- `PublishAsync` executes handlers **in-process** and **sequentially** by default.
+- **No pipeline behaviors** are applied to events.
+- **Exceptions:** if an event handler throws, `PublishAsync` will **(choose one: stop and rethrow / continue and aggregate)**.
+- Events are **not durable messages**. If you need reliable cross-process delivery (e.g., integration events), use an **Outbox + background worker / message broker** pattern.
+- Keep event handlers **fast**. For long-running work, prefer background processing.
+
 ## Event Handler
 ``` csharp
 public class UserCreatedEventHandler
@@ -151,6 +158,17 @@ These responsibilities intentionally remain in the application layer.
 
 FlowMediator is designed to be **explicit and predictable**,  
 not a full application framework.
+
+### Guarantees & Non-Goals
+
+**Guarantees**
+- `SendAsync` is request/response: **single handler**, pipeline-enabled.
+- `PublishAsync` is event notification: **multiple handlers**, no response.
+
+**Non-Goals**
+- Durable messaging / exactly-once delivery guarantees
+- Distributed transactions
+- Automatic retries without idempotency guarantees
 
 ## 🤝 Contributing
 Contributions, bug reports, and feature requests are welcome.
