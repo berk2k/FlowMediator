@@ -1,6 +1,6 @@
-﻿using FlowMediator.Console;
-using FlowMediator.Console.Behaviors;
-using FlowMediator.Console.Entities;
+﻿using FlowMediator.Console.Behaviors;
+using FlowMediator.Console.Events;
+using FlowMediator.Console.EventHandlers;
 using FlowMediator.Console.Queries;
 using FlowMediator.Console.Repositories;
 using FlowMediator.Contracts;
@@ -9,56 +9,59 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-// handlers + behavior pipelines are automatic
-//var services = new ServiceCollection();
-//services.AddFlowMediatorWithBehaviors(Assembly.GetExecutingAssembly());
-//services.AddSingleton<IUserRepository, UserRepository>();
-//services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-//var provider = services.BuildServiceProvider();
-//var mediator = provider.GetRequiredService<IMediator>();
+// ---------------------------------
+// Service registration
+// ---------------------------------
 
-// handlers are automatic, behavior pipelines manual 
 var services = new ServiceCollection();
 
+// Register FlowMediator (handlers auto, pipeline manual)
 services.AddFlowMediator(Assembly.GetExecutingAssembly());
 
+// App services
 services.AddSingleton<IUserRepository, UserRepository>();
+
+// FluentValidation validators
 services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+// Pipeline behaviors (explicit order)
 services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 var provider = services.BuildServiceProvider();
 var mediator = provider.GetRequiredService<IMediator>();
 
-// ------------------------
-// Query test
-// ------------------------
+// ---------------------------------
+// Query test (SendAsync)
+// ---------------------------------
+
+Console.WriteLine("---- QUERY TEST ----");
+
 var user = await mediator.SendAsync(new GetUserByIdQuery(1));
-System.Console.WriteLine($"User Id: {user.Id}, Name: {user.Name}");
+Console.WriteLine($"User Id: {user.Id}, Name: {user.Name}");
 
 try
 {
-    var invalidUser = await mediator.SendAsync(new GetUserByIdQuery(0));
-    System.Console.WriteLine($"User Id: {invalidUser.Id}, Name: {invalidUser.Name}");
+    await mediator.SendAsync(new GetUserByIdQuery(0));
 }
 catch (ValidationException ex)
 {
-    System.Console.WriteLine("Validation failed:");
+    Console.WriteLine("Validation failed:");
     foreach (var error in ex.Errors)
     {
-        System.Console.WriteLine($"   - {error.PropertyName}: {error.ErrorMessage}");
+        Console.WriteLine($" - {error.PropertyName}: {error.ErrorMessage}");
     }
 }
 
-// ------------------------
-// Domain Event test
-// ------------------------
-var testEntity = TestEntity.Create("SampleEntity");
+// ---------------------------------
+// Event test (PublishAsync)
+// ---------------------------------
 
+Console.WriteLine();
+Console.WriteLine("---- EVENT TEST ----");
 
-foreach (var domainEvent in testEntity.DomainEvents)
-{
-    await mediator.SendAsync(domainEvent);
-}
-testEntity.ClearDomainEvents();
+await mediator.PublishAsync(
+    new UserCreatedEvent(user.Name));
+
+Console.WriteLine();
+Console.WriteLine("Demo finished successfully.");

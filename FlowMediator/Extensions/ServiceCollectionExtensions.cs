@@ -15,6 +15,7 @@ namespace FlowMediator.Extensions
         public static IServiceCollection AddFlowMediator(this IServiceCollection services, Assembly assembly)
         {
             services.RegisterHandlers(assembly);
+            services.RegisterEventHandlers(assembly);
             services.AddSingleton<IMediator, Mediator>();
             return services;
         }
@@ -27,6 +28,7 @@ namespace FlowMediator.Extensions
         public static IServiceCollection AddFlowMediatorWithBehaviors(this IServiceCollection services, Assembly assembly)
         {
             services.RegisterHandlers(assembly);
+            services.RegisterEventHandlers(assembly);
             services.RegisterBehaviors(assembly);
             services.AddSingleton<IMediator, Mediator>();
             return services;
@@ -64,6 +66,22 @@ namespace FlowMediator.Extensions
 
             return services;
         }
-    }
 
+        private static IServiceCollection RegisterEventHandlers(
+        this IServiceCollection services,
+        Assembly assembly)
+        {
+            var handlerTypes = assembly.GetTypes()
+                .Where(t => !t.IsAbstract && !t.IsInterface)
+                .SelectMany(t => t.GetInterfaces()
+                    .Where(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
+                    .Select(i => new { Handler = t, Interface = i }));
+
+            foreach (var h in handlerTypes)
+                services.AddTransient(h.Interface, h.Handler);
+
+            return services;
+        }
+    }
 }

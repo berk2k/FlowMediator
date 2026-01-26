@@ -1,51 +1,53 @@
 # FlowMediator
-[![NuGet](https://img.shields.io/nuget/v/FlowMediator.svg)](https://www.nuget.org/packages/FlowMediator/) [![NuGet Downloads](https://img.shields.io/nuget/dt/FlowMediator.svg)](https://www.nuget.org/packages/FlowMediator/) [![Build](https://github.com/berk2k/FlowMediator/actions/workflows/ci.yml/badge.svg)](https://github.com/berk2k/FlowMediator/actions/workflows/ci.yml)
 
+[![NuGet](https://img.shields.io/nuget/v/FlowMediator.svg)](https://www.nuget.org/packages/FlowMediator/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/FlowMediator.svg)](https://www.nuget.org/packages/FlowMediator/)
+[![Build](https://github.com/berk2k/FlowMediator/actions/workflows/ci.yml/badge.svg)](https://github.com/berk2k/FlowMediator/actions/workflows/ci.yml)
 
+FlowMediator is a lightweight, opinionated mediator library for .NET 8 and .NET 9.
 
-link: https://www.nuget.org/packages/FlowMediator/
+It focuses on **explicit application flow**, not generic messaging.
 
-## Overview
-FlowMediator is a lightweight mediator library for .NET 8/9, designed to simplify the CQRS and Mediator pattern with minimal setup.
-It supports request/response messaging, pipeline behaviors, and domain events out of the box.
+---
 
-Use it when you want:
+## Why FlowMediator?
 
--Clean separation of concerns in your application
+FlowMediator was built around a simple idea:
 
--Simple request/response messaging without boilerplate
+> **Not everything is a request.**
 
--EF Core integration with Domain Events
+Commands and queries represent **intent**.  
+Events represent **facts that already happened**.
 
--A minimal learning-friendly alternative to heavy frameworks
+FlowMediator enforces this distinction explicitly.
 
-## Features
+---
 
-✅ Request/Response messaging (IRequest<TResponse>, IRequestHandler<TRequest,TResponse>)
+## Core Concepts
 
-✅ Pipeline behaviors (IPipelineBehavior<TRequest,TResponse>) for logging, validation, etc.
+| Concept | Description |
+|------|-----------|
+| SendAsync | Commands & Queries (single handler, pipeline-enabled) |
+| PublishAsync | Events (multiple handlers, side-effect oriented) |
+| Pipeline | Applies only to `SendAsync` |
+| Events | Never treated as requests |
 
-✅ Domain Events with EF Core integration (v1.2.0+)
-
-✅ Dependency Injection (DI) extensions for IServiceCollection
-
-✅ Manual or automatic pipeline registration
-
-✅ .NET 8 and .NET 9 support
+---
 
 ## Installation
+
 ```bash
-dotnet add package FlowMediator --version 1.2.0
+dotnet add package FlowMediator
 ```
 
-## Example Usage
-## 1.Define a Request & Handler
-```markdown
-// Query
+## Request / Response Example
+# Define a Request & Handler
+
+``` csharp
 public record GetUserByIdQuery(int Id) : IRequest<UserDto>;
 
-// Handler
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto>
+public class GetUserByIdQueryHandler 
+    : IRequestHandler<GetUserByIdQuery, UserDto>
 {
     private readonly IUserRepository _repository;
 
@@ -54,7 +56,9 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto
         _repository = repository;
     }
 
-    public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    public async Task<UserDto> Handle(
+        GetUserByIdQuery request,
+        CancellationToken cancellationToken)
     {
         var user = await _repository.GetByIdAsync(request.Id);
         return user ?? throw new Exception("User not found");
@@ -62,122 +66,91 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto
 }
 ```
 
-## 2. Register in DI
-```markdown
+## Register in DI
+``` csharp
 services.AddFlowMediator(typeof(GetUserByIdQuery).Assembly);
 services.AddScoped<IUserRepository, UserRepository>();
 
-// Optional: pipeline behaviors
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(LoggingBehavior<,>)
+);
 ```
-
-## 3. Use Mediator
-```markdown
+## Use Mediator
+``` csharp
 var mediator = provider.GetRequiredService<IMediator>();
-
-var user = await mediator.Send(new GetUserByIdQuery(1));
-Console.WriteLine(user.Name); // "User 1"
-
+var user = await mediator.SendAsync(new GetUserByIdQuery(1));
+Console.WriteLine(user.Name);
 ```
+## Events (v2 Model)
+Events are published, not sent.
 
-## Domain Events with EF Core
-## Base Entity
-```markdown
-public abstract class BaseEntity
+``` csharp
+public class UserCreatedEvent : IEvent
 {
-    private readonly List<IRequest<Unit>> _domainEvents = new();
-    public IReadOnlyCollection<IRequest<Unit>> DomainEvents => _domainEvents.AsReadOnly();
-
-    protected void AddDomainEvent(IRequest<Unit> domainEvent) => _domainEvents.Add(domainEvent);
-    public void ClearDomainEvents() => _domainEvents.Clear();
-}
-```
-
-## DbContext Integration
-```markdown
-public class AppDbContext : DbContext
-{
-    private readonly IMediator _mediator;
-
-    public AppDbContext(DbContextOptions<AppDbContext> options, IMediator mediator)
-        : base(options)
-    {
-        _mediator = mediator;
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var entities = ChangeTracker
-            .Entries<BaseEntity>()
-            .Where(e => e.Entity.DomainEvents.Any())
-            .Select(e => e.Entity);
-
-        foreach (var entity in entities)
-        {
-            foreach (var domainEvent in entity.DomainEvents)
-            {
-                await _mediator.Publish(domainEvent);
-            }
-            entity.ClearDomainEvents();
-        }
-
-        return await base.SaveChangesAsync(cancellationToken);
-    }
+    public Guid EventId { get; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
 }
 
+await mediator.PublishAsync(new UserCreatedEvent());
 ```
-
-## Example Entity + Event
-```markdown
-public class User : BaseEntity
-{
-    public Guid Id { get; private set; }
-    public string Name { get; private set; }
-
-    public User(string name)
-    {
-        Id = Guid.NewGuid();
-        Name = name;
-        AddDomainEvent(new UserCreatedEvent(Id, Name));
-    }
-}
-
-public record UserCreatedEvent(Guid Id, string Name) : IRequest<Unit>;
-
-```
-
 ## Event Handler
-```markdown
-public class UserCreatedEventHandler : IRequestHandler<UserCreatedEvent, Unit>
+``` csharp
+public class UserCreatedEventHandler
+    : IEventHandler<UserCreatedEvent>
 {
-    public Task<Unit> Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
+    public Task Handle(
+        UserCreatedEvent @event,
+        CancellationToken cancellationToken)
     {
-        Console.WriteLine($"[DomainEvent] User created: {notification.Name}");
-        return Task.FromResult(Unit.Value);
+        Console.WriteLine("User created");
+        return Task.CompletedTask;
     }
 }
-
-
 ```
 
-## 🤝 Contributing
-Contributions, bug reports, and feature requests are welcome!
+## Pipelines
+Pipelines apply only to SendAsync.
 
-1. Fork the repo
+They are ideal for:
 
-2. Create a feature branch (git checkout -b feature/my-feature)
+- Logging
+- Validation
+- Transactions
 
-3. Commit changes and push
+Events are executed outside the pipeline.
 
-4. Open a Pull Request
+## When to Use FlowMediator
+- Clean application flow
+- Explicit CQRS
+- Domain-driven design
+- Predictable execution
+
+## Roadmap
+- FlowContext (CorrelationId, UserId, Metadata)
+- Step-based execution model
+- Observability and retry 
 
 ## ⚠️ Disclaimer
 
-FlowMediator is a lightweight mediator library designed for hobby projects, learning, and simple applications.  
-It does **not** implement any security features by itself.  
-Please handle **validation, authorization, and exception management** within your own application.
+FlowMediator focuses on **application flow and execution semantics**.
+
+It does **not** provide:
+- Authorization or authentication
+- Security policies
+- Exception handling strategies
+- Infrastructure-level concerns
+
+These responsibilities intentionally remain in the application layer.
+
+FlowMediator is designed to be **explicit and predictable**,  
+not a full application framework.
+
+## 🤝 Contributing
+Contributions, bug reports, and feature requests are welcome.
 
 ## 📜 License
-Licensed under the MIT License. See [LICENSE](./LICENSE) for details.
+Licensed under the MIT License.
+
+
 

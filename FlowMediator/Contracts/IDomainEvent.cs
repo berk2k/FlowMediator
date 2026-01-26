@@ -2,11 +2,9 @@
 {
     /// <summary>
     /// Marker interface for domain events.
-    /// Domain events are treated as IRequest<Unit> so they flow through mediator like commands.
+    /// Domain events represent something that already happened in the domain.
     /// </summary>
-    public interface IDomainEvent : IRequest<Unit>
+    public interface IDomainEvent : IEvent
     {
-        DateTime OccurredOn { get; }
     }
 }
-

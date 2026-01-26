@@ -1,13 +1,14 @@
 ﻿using FlowMediator.Contracts;
 
-namespace FlowMediator.Tests.DomainEvents
+public class TestEvent : IEvent
 {
-    public class TestEvent : IDomainEvent
+    public Guid EventId { get; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+
+    public string Message { get; }
+
+    public TestEvent(string message)
     {
-        public string Message { get; }
-        public DateTime OccurredOn { get; } = DateTime.UtcNow;
-
-        public TestEvent(string message) => Message = message;
+        Message = message;
     }
-
 }
