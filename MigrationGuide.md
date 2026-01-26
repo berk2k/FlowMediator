@@ -56,7 +56,16 @@ Events can no longer be sent using SendAsync.
 - Events are executed outside the pipeline
 - This enables retries, compensation, and observability in future versions
 
-## 5) Dependency Injection
+## 4.5) Event Dispatch Semantics
+- `PublishAsync` runs handlers **in-process** and **sequentially** by default.
+- **Handler order is not guaranteed** unless explicitly controlled via registration/ordering.
+- If any handler throws, dispatch **stops** and the exception is **re-thrown** (remaining handlers won’t run).
+- For reliable cross-service delivery, prefer **Outbox + background worker / message broker** patterns.
 
-No changes required.
-Event handlers are discovered automatically.
+## 5) Dependency Injection
+In most cases, no changes are required as long as your event handler assembly is included in `AddFlowMediator(...)`.
+
+```csharp
+services.AddFlowMediator(typeof(SomeTypeInYourHandlersAssembly).Assembly);
+```
+Event handlers (IEventHandler<>) are discovered automatically via assembly scanning.
