@@ -85,6 +85,11 @@ Console.WriteLine(user.Name);
 ## Events (v2 Model)
 Events are published, not sent.
 
+Event handlers are executed **sequentially and synchronously** by default.
+
+This guarantees deterministic execution order.
+Parallel or asynchronous dispatch may be introduced in future versions.
+
 ``` csharp
 public class UserCreatedEvent : IEvent
 {
@@ -129,7 +134,8 @@ Events are executed outside the pipeline.
 ## Roadmap
 - FlowContext (CorrelationId, UserId, Metadata)
 - Step-based execution model
-- Observability and retry 
+- Observability and retry
+- Command / Query specialization
 
 ## ⚠️ Disclaimer
 
