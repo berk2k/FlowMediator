@@ -27,8 +27,8 @@ FlowMediator enforces this distinction explicitly.
 
 | Concept | Description |
 |------|-----------|
-| `SendAsync` | Commands & Queries (single handler, pipeline-enabled) |
-| `PublishAsync` | Events (multiple handlers, side-effect oriented) |
+| SendAsync | Commands & Queries (single handler, pipeline-enabled) |
+| PublishAsync | Events (multiple handlers, side-effect oriented) |
 | Pipeline | Applies only to `SendAsync` |
 | Events | Never treated as requests |
 
