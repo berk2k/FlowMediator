@@ -100,10 +100,11 @@ await mediator.PublishAsync(new UserCreatedEvent());
 ```
 ### Event Dispatch Semantics
 - `PublishAsync` executes handlers **in-process** and **sequentially** by default.
+- Handler order is not guaranteed unless explicitly controlled.
 - **No pipeline behaviors** are applied to events.
-- **Exceptions:** if an event handler throws, `PublishAsync` will **(choose one: stop and rethrow / continue and aggregate)**.
-- Events are **not durable messages**. If you need reliable cross-process delivery (e.g., integration events), use an **Outbox + background worker / message broker** pattern.
-- Keep event handlers **fast**. For long-running work, prefer background processing.
+- **Exceptions:** If an event handler throws, PublishAsync stops and the exception is re-thrown (remaining handlers won’t run).
+- Events are not durable messages; for reliable cross-process delivery use Outbox + worker / broker.
+- Keep handlers fast; long-running work should go to background processing.
 
 ## Event Handler
 ``` csharp
