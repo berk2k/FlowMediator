@@ -1,4 +1,4 @@
-﻿namespace FlowMediator.Tests
+﻿namespace FlowMediator.Tests.Fixtures
 {
     public class HandlerResult
     {

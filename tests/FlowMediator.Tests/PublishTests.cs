@@ -1,19 +1,21 @@
 ﻿using FlowMediator.Contracts;
-using FlowMediator.Core;
 using FlowMediator.Extensions;
-using FlowMediator.Tests.DomainEvents;
+using FlowMediator.Tests.Fixtures;
+using FlowMediator.Tests.Fixtures.Events;
+using FlowMediator.Tests.Fixtures.Handlers;
+using FlowMediator.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FlowMediator.Tests
 {
-    public class DomainEventPublishTests
+    public class PublishTests
     {
         private (IMediator mediator, HandlerResult result) CreateMediator()
         {
             var result = new HandlerResult();
             var services = new ServiceCollection();
             services.AddSingleton(result);
-            services.AddFlowMediator(typeof(DomainEventPublishTests).Assembly);
+            services.AddFlowMediator(typeof(PublishTests).Assembly);
             var provider = services.BuildServiceProvider();
             return (provider.GetRequiredService<IMediator>(), result);
         }
@@ -43,7 +45,6 @@ namespace FlowMediator.Tests
             var result = new HandlerResult();
             var services = new ServiceCollection();
             services.AddSingleton(result);
-
             services.AddSingleton<IMediator, Mediator>();
             services.AddTransient<IEventHandler<FailingEvent>, FailingEventHandler>();
             services.AddTransient<IEventHandler<FailingEvent>, AfterFailingEventHandler>();

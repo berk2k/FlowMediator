@@ -1,6 +1,6 @@
 ﻿using FlowMediator.Contracts;
 
-namespace FlowMediator.Tests
+namespace FlowMediator.Tests.Fixtures.Events
 {
     public class FailingEvent : IEvent
     {

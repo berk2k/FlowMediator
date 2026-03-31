@@ -1,5 +1,6 @@
 ﻿using FlowMediator.Contracts;
-using FlowMediator.Tests;
+using FlowMediator.Tests.Fixtures;
+using FlowMediator.Tests.Fixtures.Events;
 
 public class AfterFailingEventHandler : IEventHandler<FailingEvent>
 {

@@ -1,5 +1,5 @@
 ﻿using FlowMediator.Contracts;
-using FlowMediator.Tests;
+using FlowMediator.Tests.Fixtures;
 
 public class TestEventHandler : IEventHandler<TestEvent>
 {

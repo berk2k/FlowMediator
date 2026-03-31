@@ -1,6 +1,7 @@
 ﻿using FlowMediator.Contracts;
+using FlowMediator.Tests.Fixtures.Events;
 
-namespace FlowMediator.Tests.DomainEvents
+namespace FlowMediator.Tests.Fixtures.Handlers
 {
     public class FailingEventHandler : IEventHandler<FailingEvent>
     {
