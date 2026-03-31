@@ -1,12 +1,19 @@
 ﻿using FlowMediator.Contracts;
+using FlowMediator.Tests;
 
 public class TestEventHandler : IEventHandler<TestEvent>
 {
-    public static bool WasHandled { get; private set; }
+    private readonly HandlerResult _result;
+
+    public TestEventHandler(HandlerResult result)
+    {
+        _result = result;
+    }
 
     public Task Handle(TestEvent @event, CancellationToken cancellationToken)
     {
-        WasHandled = true;
+        _result.WasHandled = true;
+        _result.HandledBy.Add(nameof(TestEventHandler));
         return Task.CompletedTask;
     }
 }

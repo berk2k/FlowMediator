@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <PackageId>FlowMediator</PackageId>
     <Authors>berk2k</Authors>
     <Description>
@@ -22,14 +22,19 @@
     <RepositoryUrl>https://github.com/berk2k/FlowMediator</RepositoryUrl>
     <PackageProjectUrl>https://github.com/berk2k/FlowMediator</PackageProjectUrl>
     <PackageReleaseNotes>
-      v2.0.0
-      - Explicit separation between Send (application flow) and Publish (events)
-      - Events are no longer treated as requests
-      - Multiple event handlers supported
-      - Pipeline applies only to SendAsync
-      - Event handlers are executed sequentially and synchronously
-      - Breaking change: migration from v1.x is required
-</PackageReleaseNotes>
+    v2.0.1
+    - Docs: clarified PublishAsync semantics (in-process, sequential; order not guaranteed unless controlled)
+    - Docs: clarified exception behavior (stop and rethrow on handler exception)
+
+    v2.0.0
+    - Explicit separation between Send (application flow) and Publish (events)
+    - Events are no longer treated as requests
+    - Multiple event handlers supported
+    - Pipeline applies only to SendAsync
+    - Event handlers are executed sequentially (in-process) by default
+    - Breaking change: migration from v1.x is required
+    </PackageReleaseNotes>
+
 
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
